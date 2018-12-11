@@ -10,6 +10,7 @@ from datetime import datetime
 
 import requests
 import wx
+import sqlite3
 
 from ..utils.localcopy import CopyFile
 from ..utils.openssh import UploadFile
@@ -20,6 +21,7 @@ from ..models.settings.miscellaneous import MiscellaneousSettingsModel
 from ..models.upload import UploadModel
 from ..models.upload import UploadStatus
 from ..models.datafile import DataFileModel
+from ..models.user import UserModel
 from ..threads.flags import FLAGS
 from ..threads.locks import LOCKS
 from ..utils import SafeStr
@@ -67,6 +69,24 @@ def StopUploadsAsFailed(message, showError=False):
             MYDATA_EVENTS.ShowMessageDialogEvent(
                 title="MyData", message=message,
                 icon=wx.ICON_ERROR))
+
+
+def PersistentDragNDropUpload(db_file):
+ 
+    try:
+        dragNDropDB = sqlite3.connect(db_file)
+        c = dragNDropDB.cursor()
+        c.execute('SELECT userEmail, folderPath FROM draggedFolderInfo')
+        data = c.fetchall()
+        for record in data:
+            email = record[0]
+            folder = record[1]
+            owner = UserModel.GetUserByEmail(email)
+            DATAVIEW_MODELS['folders'].UploadDraggedFolder(folder, owner)
+        c.close()
+        dragNDropDB.close()
+    except Exception as e:
+        print("Exception" + str(e))
 
 
 class UploadDatafileRunnable(object):

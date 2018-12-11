@@ -485,12 +485,14 @@ def StartDataUploadsForFolder(event):
         """
         Start the data uploads in a dedicated thread.
         """
+        print("==========2=============")
         logger.debug("Starting run() method for thread %s"
                      % threading.current_thread().name)
         logger.debug("StartDataUploadsForFolderWorker")
         wx.CallAfter(BeginBusyCursorIfRequired)
         if not eventFolderAddMethod == FolderUploadUIType.DRAG_N_DROP:
             if FLAGS.shouldAbort or not FLAGS.scanningFolders:
+                print("==========3=============")
                 return
         FLAGS.performingLookupsAndUploads = True
         message = "Checking for data files on MyTardis and uploading " \
@@ -504,7 +506,9 @@ def StartDataUploadsForFolder(event):
             app.foldersController.StartUploadsForFolder(folderModel)
             wx.CallAfter(EndBusyCursorIfRequired, event)
 
-    if wx.PyApp.IsMainLoopRunning():
+    if wx.PyApp.IsMainLoopRunning(): 
+        #or SETTINGS.advanced.folderStructure == "Drag-n-Drop":
+
         # Note that you only need to supply two arguments if you have a GUI. Without a GUI \
         # you can't drag n drop
         startDataUploadsForFolderThread = \
@@ -517,8 +521,12 @@ def StartDataUploadsForFolder(event):
         MYDATA_THREADS.Add(startDataUploadsForFolderThread)
         startDataUploadsForFolderThread.start()
     else:
-        StartDataUploadsForFolderWorker(event.folderModel)
 
+        # Have something here that will start uploads in a separate thread if you happen to be a drag-n-drop event
+        #eventFolderAddMethod = FolderUploadUIType.DRAG_N_DROP
+        #StartDataUploadsForFolderWorker(event.folderModel, eventFolderAddMethod)
+        #print("==========1=============")
+        StartDataUploadsForFolderWorker(event.folderModel)
 
 def DidntFindDatafileOnServer(event):
     """

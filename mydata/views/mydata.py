@@ -10,6 +10,7 @@ import traceback
 
 import wx
 
+from ..settings import SETTINGS
 from ..constants import APPNAME
 from ..logs import logger
 from ..media import MYDATA_ICONS
@@ -283,7 +284,8 @@ class MyDataFrame(wx.Frame):
         """
         Update status bar's message.
         """
-        assert threading.current_thread().name == "MainThread"
+        if not SETTINGS.advanced.folderStructure == "Drag-n-Drop":
+            assert threading.current_thread().name == "MainThread"
         if FLAGS.shouldAbort and not force:
             return
         if sys.platform.startswith("win"):

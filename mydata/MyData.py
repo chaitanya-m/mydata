@@ -24,14 +24,16 @@ from .views.testrun import TestRunFrame
 from .controllers.folders import FoldersController
 from .controllers.schedule import ScheduleController
 from .controllers.updates import VersionCheck
+from .controllers.uploads import PersistentDragNDropUpload
 
 from .events.settings import OnSettings
 from .events import MYDATA_EVENTS
+from .events import PostEvent
 
 from .utils.notification import Notification
 
 from .logs import logger
-
+from .models.uploader import UploaderModel
 
 class MyData(wx.App):
     """
@@ -92,17 +94,6 @@ class MyData(wx.App):
         """
 
         from .utils import CreateConfigPathIfNecessary
-        if SETTINGS.advanced.folderStructure == "Drag-n-Drop":
-            dbPath = CreateConfigPathIfNecessary() 
-            # Since we are starting in Drag-n-Drop mode, let us read from the Database
-            print dbPath
-
-        # A good spot to check if Settings.advanced.folderStructure has a value,
-        # is/isn't set to Drag-n-drop. If set, start in Drag-n-drop mode. If unset, 
-        # default to what it currently starts with. Obviously, if set, reload persistent
-        # folders. Also reload persistent folders when Drag-n-drop is explicitly set.
-        # Don't forget to test around initial runs post installation!
-
         from .utils import InitializeTrustedCertsPath
         from .utils import CheckIfSystemTrayFunctionalityMissing
         self.SetAppName(APPNAME)
@@ -125,6 +116,7 @@ class MyData(wx.App):
         self.testRunFrame = TestRunFrame(self.frame)
 
         self.foldersController = FoldersController(self.frame)
+
         self.scheduleController = ScheduleController()
 
         if sys.platform.startswith("win"):
@@ -168,7 +160,6 @@ class MyData(wx.App):
                 # the GUI can appear frozen while the "On Startup" task is
                 # beginning.
                 wx.CallAfter(self.scheduleController.ApplySchedule, event)
-
         return True
 
     def CheckIfAlreadyRunning(self, appdirPath):
@@ -264,7 +255,38 @@ def Run(argv):
     Main function for launching MyData.
     """
     app = MyData(argv)
+
+    from .utils import CreateConfigPathIfNecessary
+    if SETTINGS.advanced.folderStructure == "Drag-n-Drop":
+        try:
+            uploaderModel = UploaderModel(SETTINGS)
+            SETTINGS.uploaderModel = uploaderModel
+        except Exception as e:
+            print e
+
+        db_file = os.path.join(os.sep, CreateConfigPathIfNecessary(), 'dragndrop.db')
+        PersistentDragNDropUpload(db_file) 
+        # Since we are starting in Drag-n-Drop mode, let us read from the Database
+        # We shoudln't need settings at all
+        # print dbPath
+        # settingsDialogValidationEvent = \
+        # MYDATA_EVENTS.SettingsDialogValidationEvent(
+        # settingsDialog=self, okEvent=True)
+        # PostEvent(settingsDialogValidationEvent)
+
+    # A good spot to check if Settings.advanced.folderStructure has a value,
+    # is/isn't set to Drag-n-drop. If set, start in Drag-n-drop mode. If unset, 
+    # default to what it currently starts with. Obviously, if set, reload persistent
+    # folders. Also reload persistent folders when Drag-n-drop is explicitly set.
+    # Don't forget to test around initial runs post installation!
+
+
+
+
     app.MainLoop()
+
+
+    
 
 
 if __name__ == "__main__":
