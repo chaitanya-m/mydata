@@ -506,8 +506,7 @@ def StartDataUploadsForFolder(event):
             app.foldersController.StartUploadsForFolder(folderModel)
             wx.CallAfter(EndBusyCursorIfRequired, event)
 
-    if wx.PyApp.IsMainLoopRunning(): 
-        #or SETTINGS.advanced.folderStructure == "Drag-n-Drop":
+    if wx.PyApp.IsMainLoopRunning() or SETTINGS.advanced.folderStructure == "Drag-n-Drop":
 
         # Note that you only need to supply two arguments if you have a GUI. Without a GUI \
         # you can't drag n drop

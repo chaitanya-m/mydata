@@ -447,6 +447,9 @@ class FoldersController(object):
         else:
             self.CountCompletedUploadsAndVerifications(event=None)
 
+    # If you're calling this in a separate thread at start parallel to the MainLoop...
+    # Obviously you'll have to initialize the folderModel being used or it will be null
+    # There may be other things that need to be intialised too...
     def StartUploadsForFolder(self, folderModel):
         """
         Start uploads for the specified folder
