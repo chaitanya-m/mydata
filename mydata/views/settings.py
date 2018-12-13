@@ -15,6 +15,7 @@ import os
 import traceback
 
 import wx
+import sqlite3
 
 from ..settings import SETTINGS
 from ..models.settings.serialize import LoadSettings
@@ -29,7 +30,6 @@ from ..logs import logger
 from ..events import MYDATA_EVENTS
 from ..events import PostEvent
 from ..threads.flags import FLAGS
-from ..controllers.uploads import PersistentDragNDropUpload
 
 if 'phoenix' in wx.PlatformInfo:
     import wx.lib.masked
@@ -1261,29 +1261,43 @@ class SettingsDialog(wx.Dialog):
         # We need a total compartmentalization
         # The control code should be in a controller file and merely called here...
         if self.GetFolderStructure() == "Drag-n-Drop":
-            db_file = os.path.join(os.sep, CreateConfigPathIfNecessary(), 'dragndrop.db')
-            PersistentDragNDropUpload(db_file)
-            #app = wx.GetApp()
-            #message = "Entering Drag-n-drop Mode.======================================================="
-            #app.frame.SetStatusMessage(message)
+            try:
+                db_file = os.path.join(os.sep, CreateConfigPathIfNecessary(), 'dragndrop.db')
+                dragNDropDB = sqlite3.connect(db_file)
+                c = dragNDropDB.cursor()
+                c.execute('SELECT userEmail, folderPath FROM draggedFolderInfo')
+                data = c.fetchall()
+                for record in data:
+                    email = record[0]
+                    folder = record[1]
+                    owner = UserModel.GetUserByEmail(email)
+                    DATAVIEW_MODELS['folders'].UploadDraggedFolder(folder, owner)
 
-#        if self.GetInstrumentName() != \
-#                SETTINGS.general.instrumentName and \
-#                SETTINGS.general.instrumentName != "":
-#            instrumentNameMismatchEvent = \
-#                MYDATA_EVENTS.InstrumentNameMismatchEvent(
-#                    settingsDialog=self,
-#                    facilityName=self.GetFacilityName(),
-#                    oldInstrumentName=SETTINGS.general.instrumentName,
-#                    newInstrumentName=self.GetInstrumentName())
-#            PostEvent(instrumentNameMismatchEvent)
-#            return
-#
-#        settingsDialogValidationEvent = \
-#            MYDATA_EVENTS.SettingsDialogValidationEvent(
-#                settingsDialog=self, okEvent=event)
-#        PostEvent(settingsDialogValidationEvent)
-#       # If we reintroduce the General Tab as suggested... because we need the MyTardis URL
+                c.close()
+                dragNDropDB.close()
+            except Exception as e:
+                    print(e)
+            app = wx.GetApp()
+            message = "Entering Drag-n-drop Mode.======================================================="
+            app.frame.SetStatusMessage(message)
+
+        if self.GetInstrumentName() != \
+                SETTINGS.general.instrumentName and \
+                SETTINGS.general.instrumentName != "":
+            instrumentNameMismatchEvent = \
+                MYDATA_EVENTS.InstrumentNameMismatchEvent(
+                    settingsDialog=self,
+                    facilityName=self.GetFacilityName(),
+                    oldInstrumentName=SETTINGS.general.instrumentName,
+                    newInstrumentName=self.GetInstrumentName())
+            PostEvent(instrumentNameMismatchEvent)
+            return
+
+        settingsDialogValidationEvent = \
+            MYDATA_EVENTS.SettingsDialogValidationEvent(
+                settingsDialog=self, okEvent=event)
+        PostEvent(settingsDialogValidationEvent)
+       # If we reintroduce the General Tab as suggested... because we need the MyTardis URL
         # We will also need to mod the ValidationEvent
         # So I'll take the shortest path to persistence first, then fill in the blanks
 

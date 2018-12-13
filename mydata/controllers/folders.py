@@ -630,8 +630,7 @@ class FoldersController(object):
         if self.completed or self.canceled:
             return
 
-        if not SETTINGS.advanced.folderStructure == "Drag-n-Drop":
-            assert threading.current_thread().name == "MainThread"
+        assert threading.current_thread().name == "MainThread"
 
         # Tell the folders view to refresh its data.  (It was previously
         # updated only when a change was made to the underlying data, but
