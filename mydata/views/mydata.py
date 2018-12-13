@@ -144,7 +144,27 @@ class EmailExperimentEntryDialog(wx.Dialog):
         # pylint: disable=unused-argument
         try:
             email = self.emailEntry.GetValue() # check syntax
-            owner = UserModel.GetUserByEmail(email)
+            owner = UserModel.GetUserByEmail(email) 
+
+            #print DATAVIEW_MODELS['folders'].GetCount()
+            #print os.path.dirname(self.dirAbsPath)
+            for row in reversed(range(0, DATAVIEW_MODELS['folders'].GetRowCount())):
+                rowData =  DATAVIEW_MODELS['folders'].rowsData[row]
+
+                if (any([owner.username == rowData.GetValueForKey(field)
+                    for field in DATAVIEW_MODELS['folders'].filterFields]) 
+                    
+                    and any([str(os.path.basename(self.dirAbsPath)) 
+                            == rowData.GetValueForKey(field)
+                            for field in DATAVIEW_MODELS['folders'].filterFields])
+
+                    and any([os.path.dirname(self.dirAbsPath) 
+                             == rowData.GetValueForKey(field)
+                             for field in DATAVIEW_MODELS['folders'].filterFields])):
+                    print "Folder already uploaded/uploading!"
+                    del DATAVIEW_MODELS['folders'].rowsData[row]
+                    DATAVIEW_MODELS['folders']._RowDeleted(row)
+
             self.dlg = wx.MessageDialog(self, "Adding to upload queue...")
             if not 'MYDATA_TESTING' in os.environ:
                 dialogOK = (self.dlg.ShowModal() == wx.ID_OK)
