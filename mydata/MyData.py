@@ -93,9 +93,13 @@ class MyData(wx.App):
 
         from .utils import CreateConfigPathIfNecessary
         if SETTINGS.advanced.folderStructure == "Drag-n-Drop":
+            SETTINGS.schedule.scheduleType = "On Startup"
+            # If starting in Drag-n-drop Mode, Schedule immediately 
+            # a persistent scan+upload
             dbPath = CreateConfigPathIfNecessary() 
             # Since we are starting in Drag-n-Drop mode, let us read from the Database
             print dbPath
+            #ScheduleController.CreateOnStartupTask(needToValidateSettings)
 
         # A good spot to check if Settings.advanced.folderStructure has a value,
         # is/isn't set to Drag-n-drop. If set, start in Drag-n-drop mode. If unset, 

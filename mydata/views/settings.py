@@ -1261,7 +1261,9 @@ class SettingsDialog(wx.Dialog):
         # We need a total compartmentalization
         # The control code should be in a controller file and merely called here...
         if self.GetFolderStructure() == "Drag-n-Drop":
+
             try:
+                app = wx.GetApp()
                 db_file = os.path.join(os.sep, CreateConfigPathIfNecessary(), 'dragndrop.db')
                 dragNDropDB = sqlite3.connect(db_file)
                 c = dragNDropDB.cursor()
@@ -1270,16 +1272,37 @@ class SettingsDialog(wx.Dialog):
                 for record in data:
                     email = record[0]
                     folder = record[1]
+                    dirAbsPath = folder
                     owner = UserModel.GetUserByEmail(email)
+
+                    # If any clashes, remove and reupload. This code is because filters don't work.
+                    for row in reversed(range(0, DATAVIEW_MODELS['folders'].GetRowCount())):
+                        rowData =  DATAVIEW_MODELS['folders'].rowsData[row]
+
+                        if (any([owner.username == rowData.GetValueForKey(field)
+                            for field in DATAVIEW_MODELS['folders'].filterFields]) 
+                    
+                            and any([str(os.path.basename(dirAbsPath)) 
+                                        == rowData.GetValueForKey(field)
+                            for field in DATAVIEW_MODELS['folders'].filterFields])
+
+                            and any([os.path.dirname(dirAbsPath) 
+                                         == rowData.GetValueForKey(field)
+                            for field in DATAVIEW_MODELS['folders'].filterFields])):
+                            message = "Some folders already uploaded/uploading!"
+                            wx.CallAfter(app.frame.SetStatusMessage, message)
+                            del DATAVIEW_MODELS['folders'].rowsData[row]
+                            DATAVIEW_MODELS['folders']._RowDeleted(row)
+
                     DATAVIEW_MODELS['folders'].UploadDraggedFolder(folder, owner)
 
                 c.close()
                 dragNDropDB.close()
+
             except Exception as e:
                     print(e)
-            app = wx.GetApp()
-            message = "Entering Drag-n-drop Mode.======================================================="
-            app.frame.SetStatusMessage(message)
+            message = "Entering Drag-n-drop Mode..."
+            wx.CallAfter(app.frame.SetStatusMessage,message)
 
         if self.GetInstrumentName() != \
                 SETTINGS.general.instrumentName and \

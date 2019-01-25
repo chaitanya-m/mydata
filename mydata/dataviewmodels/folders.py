@@ -193,6 +193,48 @@ class FoldersModel(MyDataDataViewModel):
         elif folderStructure.startswith("Dataset"):
             self.ScanForDatasetFolders(dataDir, defaultOwner,
                                        defaultOwner.username)
+        elif folderStructure.startswith("Drag-n-Drop"):
+
+            try:
+
+                db_file = os.path.join(os.sep, CreateConfigPathIfNecessary(), 'dragndrop.db')
+                dragNDropDB = sqlite3.connect(db_file)
+                c = dragNDropDB.cursor()
+                c.execute('SELECT userEmail, folderPath FROM draggedFolderInfo')
+                data = c.fetchall()
+                for record in data:
+                    email = record[0]
+                    folder = record[1]
+                    owner = UserModel.GetUserByEmail(email)
+                    DATAVIEW_MODELS['folders'].UploadDraggedFolder(folder, owner)
+
+                c.close()
+                dragNDropDB.close()
+            except Exception as e:
+                    print(e)
+            app = wx.GetApp()
+
+            message = "Started in Drag-n-drop Mode"
+            wx.CallAfter(app.frame.SetStatusMessage, message)
+
+#
+#            if folderStructure == 'Drag-n-Drop':
+#    
+#                # store this value somewhere properly? Also proper path.
+#                dragNDropDB = sqlite3.connect(os.path.join(os.sep, CreateConfigPathIfNecessary(), 'dragndrop.db'))
+#                c = dragNDropDB.cursor()
+#                c.execute('SELECT userEmail, folderPath FROM draggedFolderInfo')
+#                data = c.fetchall()
+#                print data
+#    
+#                # populate view and check folders from this data
+#                c.close()
+#                dragNDropDB.close()
+#    
+                #load persistent folders from database
+
+                # We should want users to explicitly set Drag-n-drop mode, then add all dragged folders to 
+                # the persistent database
         else:
             raise InvalidFolderStructure("Unknown folder structure.")
 
@@ -236,25 +278,7 @@ class FoldersModel(MyDataDataViewModel):
                 SETTINGS.general.dataDirectory, userFolderName)
             logger.debug("Folder structure: " + folderStructure)
 
-            if folderStructure == 'Drag-n-Drop':
-    
-                # store this value somewhere properly? Also proper path.
-                dragNDropDB = sqlite3.connect(os.path.join(os.sep, CreateConfigPathIfNecessary(), 'dragndrop.db'))
-                c = dragNDropDB.cursor()
-                c.execute('SELECT userEmail, folderPath FROM draggedFolderInfo')
-                data = c.fetchall()
-                print data
-    
-                # populate view and check folders from this data
-                c.close()
-                dragNDropDB.close()
-    
-                #load persistent folders from database
-
-                # We should want users to explicitly set Drag-n-drop mode, then add all dragged folders to 
-                # the persistent database
-
-            elif folderStructure == 'Username / Dataset' or \
+            if folderStructure == 'Username / Dataset' or \
                     folderStructure == 'Email / Dataset':
                 self.ScanForDatasetFolders(userFolderPath, userRecord,
                                            userFolderName)

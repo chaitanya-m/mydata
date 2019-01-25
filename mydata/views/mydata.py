@@ -161,7 +161,7 @@ class EmailExperimentEntryDialog(wx.Dialog):
                     and any([os.path.dirname(self.dirAbsPath) 
                              == rowData.GetValueForKey(field)
                              for field in DATAVIEW_MODELS['folders'].filterFields])):
-                    print "Folder already uploaded/uploading!"
+                    #print "Folder already uploaded/uploading!"
                     del DATAVIEW_MODELS['folders'].rowsData[row]
                     DATAVIEW_MODELS['folders']._RowDeleted(row)
 
@@ -272,6 +272,8 @@ class MyDataFrame(wx.Frame):
         # Let's make this a drag n drop panel
         dropTarget = MyFileDropTarget(self.panel)
         self.panel.SetDropTarget(dropTarget)
+        # If you start in Drag-n-drop mode, make it droptarget, else don't
+        # Also, when starting in drag-n-drop, pop up an appropriate dialog asking the user to explicitly set mode to drag-n-drop
 
         # Maybe this is where we should also launch something to add the drag-n-drop persistent folders
 
