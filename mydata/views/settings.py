@@ -14,8 +14,9 @@ import platform
 import os
 import traceback
 
-import wx
 import sqlite3
+import wx
+import mydata
 
 from ..settings import SETTINGS
 from ..models.settings.serialize import LoadSettings
@@ -30,7 +31,6 @@ from ..logs import logger
 from ..events import MYDATA_EVENTS
 from ..events import PostEvent
 from ..threads.flags import FLAGS
-import mydata
 
 if 'phoenix' in wx.PlatformInfo:
     import wx.lib.masked
@@ -1275,8 +1275,8 @@ class SettingsDialog(wx.Dialog):
 
             try:
                 app = wx.GetApp()
-                db_file = os.path.join(os.sep, CreateConfigPathIfNecessary(), 'dragndrop.db')
-                dragNDropDB = sqlite3.connect(db_file)
+                dbFile = os.path.join(os.sep, CreateConfigPathIfNecessary(), 'dragndrop.db')
+                dragNDropDB = sqlite3.connect(dbFile)
                 c = dragNDropDB.cursor()
                 c.execute('SELECT userEmail, folderPath FROM draggedFolderInfo')
                 data = c.fetchall()
@@ -1288,18 +1288,16 @@ class SettingsDialog(wx.Dialog):
 
                     # If any clashes, remove and reupload. This code is because filters don't work.
                     for row in reversed(range(0, DATAVIEW_MODELS['folders'].GetRowCount())):
-                        rowData =  DATAVIEW_MODELS['folders'].rowsData[row]
+                        rowData = DATAVIEW_MODELS['folders'].rowsData[row]
 
                         if (any([owner.username == rowData.GetValueForKey(field)
-                            for field in DATAVIEW_MODELS['folders'].filterFields]) 
-                    
-                            and any([str(os.path.basename(dirAbsPath)) 
-                                        == rowData.GetValueForKey(field)
-                            for field in DATAVIEW_MODELS['folders'].filterFields])
-
-                            and any([os.path.dirname(dirAbsPath) 
+                                 for field in DATAVIEW_MODELS['folders'].filterFields])
+                                and any([str(os.path.basename(dirAbsPath))
                                          == rowData.GetValueForKey(field)
-                            for field in DATAVIEW_MODELS['folders'].filterFields])):
+                                         for field in DATAVIEW_MODELS['folders'].filterFields])
+                                and any([os.path.dirname(dirAbsPath)
+                                         == rowData.GetValueForKey(field)
+                                         for field in DATAVIEW_MODELS['folders'].filterFields])):
                             message = "Some folders already uploaded/uploading!"
                             wx.CallAfter(app.frame.SetStatusMessage, message)
                             del DATAVIEW_MODELS['folders'].rowsData[row]
@@ -1311,9 +1309,9 @@ class SettingsDialog(wx.Dialog):
                 dragNDropDB.close()
 
             except Exception as e:
-                    print(e)
+                print e
             message = "Entering Drag-n-drop Mode..."
-            wx.CallAfter(app.frame.SetStatusMessage,message)
+            wx.CallAfter(app.frame.SetStatusMessage, message)
 
         if self.GetInstrumentName() != \
                 SETTINGS.general.instrumentName and \
@@ -1519,16 +1517,17 @@ class SettingsDialog(wx.Dialog):
         self.SetLocked(SETTINGS.miscellaneous.locked)
 
         # First Check if drag-n-Drop is preset, if so, disable everything else on panel
-        # But if user changes selection, it has to revert to normal.  
+        # But if user changes selection, it has to revert to normal.
         if SETTINGS.advanced.folderStructure == 'Drag-n-Drop':
             self.SetFolderStructure(SETTINGS.advanced.folderStructure)
 
             for child in self.advancedPanelSizer.GetChildren():
-                if(child.GetWindow() is not None):
-                    if(child.GetWindow().GetId() not in [self.ID_folderStructureComboBox, self.ID_folderStructureLabel]):
+                if child.GetWindow() is not None:
+                    if (child.GetWindow().GetId() not in
+                            [self.ID_folderStructureComboBox, self.ID_folderStructureLabel]):
                         child.Show(False)
-            # give the SizerItem children ids, pick the ones with the ids for 
-            # folder structure text and multi, and show them... hide the rest 
+            # give the SizerItem children ids, pick the ones with the ids for
+            # folder structure text and multi, and show them... hide the rest
             self.settingsTabsNotebook.EnableTab(0, True)
             self.dataDirectoryField.Enable(False)
             self.browseDataDirectoryButton.Enable(False)
@@ -1536,8 +1535,8 @@ class SettingsDialog(wx.Dialog):
             self.settingsTabsNotebook.EnableTab(2, False)
             self.settingsTabsNotebook.EnableTab(3, True)
             self.settingsTabsNotebook.SetSelection(3, True)
- 
- 
+
+
 
 
     def EnablePasteInPasswordField(self):
@@ -1698,10 +1697,11 @@ class SettingsDialog(wx.Dialog):
             self.settingsTabsNotebook.EnableTab(3, True)
             self.settingsTabsNotebook.SetSelection(3, True)
             for child in self.advancedPanelSizer.GetChildren():
-                if(child.GetWindow() is not None):
-                    if(child.GetWindow().GetId() not in [self.ID_folderStructureComboBox, self.ID_folderStructureLabel]):
+                if child.GetWindow() is not None:
+                    if(child.GetWindow().GetId() not in
+                       [self.ID_folderStructureComboBox, self.ID_folderStructureLabel]):
                         child.Show(False)
- 
+
         else:
             self.dataDirectoryField.Enable(True)
             self.browseDataDirectoryButton.Enable(True)
@@ -1711,9 +1711,9 @@ class SettingsDialog(wx.Dialog):
             self.settingsTabsNotebook.EnableTab(3, True)
             self.settingsTabsNotebook.SetSelection(3, True)
             for child in self.advancedPanelSizer.GetChildren():
-                if(child.GetWindow() is not None):
+                if child.GetWindow() is not None:
                     child.Show(True) # Slows it down?
- 
+
         if folderStructure == 'Username / Dataset' or \
                 folderStructure == 'Email / Dataset' or \
                 folderStructure == 'Dataset':
