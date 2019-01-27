@@ -19,6 +19,7 @@ from .settings import SETTINGS
 from .dataviewmodels.dataview import DATAVIEW_MODELS
 
 from .views.mydata import MyDataFrame
+from .views.mydata import MyFileDropTarget
 from .views.testrun import TestRunFrame
 
 from .controllers.folders import FoldersController
@@ -172,6 +173,12 @@ class MyData(wx.App):
                 # the GUI can appear frozen while the "On Startup" task is
                 # beginning.
                 wx.CallAfter(self.scheduleController.ApplySchedule, event)
+
+                # Let's make this a drag n drop panel
+                if SETTINGS.advanced.folderStructure == "Drag-n-Drop":
+                    dropTarget = MyFileDropTarget(self.frame)
+                    wx.CallAfter(self.frame.SetDropTarget, dropTarget)
+        # If you start in Drag-n-drop mode, make it droptarget, else don't
 
         return True
 
