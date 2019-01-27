@@ -7,9 +7,9 @@ from ...MyData import MyData
 from ...events import MYDATA_EVENTS
 from ...events.start import LogStartScansAndUploadsCaller
 from ...events.start import OnTestRunFromToolbar
-from ...models.settings.serialize import SaveSettingsToDisk
-from ...models.settings.validation import ValidateSettings
-from ...models.settings.general import GeneralSettingsModel # why isn't this initialising? 
+#from ...models.settings.serialize import SaveSettingsToDisk
+#from ...models.settings.validation import ValidateSettings
+from ...models.settings.general import GeneralSettingsModel # why isn't this initialising?
 from .. import MyDataSettingsTester
 from ...settings import SETTINGS
 
@@ -20,6 +20,8 @@ class MyDataAppInstanceDragnDropTester(MyDataSettingsTester):
     def __init__(self, *args, **kwargs):
         super(MyDataAppInstanceDragnDropTester, self).__init__(*args, **kwargs)
         self.mydataApp = None
+        self.settingsModel = GeneralSettingsModel() # Not initialising properly?
+        self.mydataApp = MyData(argv=['MyData', '--loglevel', 'DEBUG'])
 
     def setUp(self):
         super(MyDataAppInstanceDragnDropTester, self).setUp()
@@ -34,9 +36,6 @@ class MyDataAppInstanceDragnDropTester(MyDataSettingsTester):
         Test ability to use MyData's Test Run when a file is dragged and dropped.
         """
         #ValidateSettings()
-        self.settingsModel = GeneralSettingsModel() # Not initialising properly?
-        self.mydataApp = MyData(argv=['MyData', '--loglevel', 'DEBUG'])
-
         popupMenu = self.mydataApp.frame.taskBarIcon.CreatePopupMenu()
 
         # Just for test coverage:
@@ -73,10 +72,11 @@ class MyDataAppInstanceDragnDropTester(MyDataSettingsTester):
         self.mydataApp.frame.OnAbout(pyEvent)
 
         # Test drag-n-drop functionality
-        #self.mydataApp.frame.panel.GetDropTarget().OnDropFiles(0,0,[self.settingsModel.dataDirectory()]) 
+        #self.mydataApp.frame.panel.GetDropTarget().
+        #OnDropFiles(0,0,[self.settingsModel.dataDirectory()])
         # WHY DOESN'T THIS WORK?
-        dropTarget=self.mydataApp.frame.panel.GetDropTarget()
-        dropTarget.OnDropFiles(0,0,[SETTINGS.general.dataDirectory])
+        dropTarget = self.mydataApp.frame.panel.GetDropTarget()
+        dropTarget.OnDropFiles(0, 0, [SETTINGS.general.dataDirectory])
         dropTarget.dlg.emailEntry.SetValue(r'testuser1@example.com')
         dropTarget.dlg.OnUpload(wx.PyCommandEvent(wx.EVT_BUTTON.typeId, dropTarget.dlg.GetId()))
         dropTarget.dlg.EndModal(wx.ID_CLOSE)
@@ -89,4 +89,3 @@ class MyDataAppInstanceDragnDropTester(MyDataSettingsTester):
         #self.mydataApp.testRunFrame.Hide()
         #self.mydataApp.frame.Hide()
         #self.mydataApp.frame.Destroy()
-

@@ -194,9 +194,8 @@ class FoldersModel(MyDataDataViewModel):
             self.ScanForDatasetFolders(dataDir, defaultOwner,
                                        defaultOwner.username)
         elif folderStructure.startswith("Drag-n-Drop"):
-
             try:
-
+                app = wx.GetApp()
                 db_file = os.path.join(os.sep, CreateConfigPathIfNecessary(), 'dragndrop.db')
                 dragNDropDB = sqlite3.connect(db_file)
                 c = dragNDropDB.cursor()
@@ -205,14 +204,30 @@ class FoldersModel(MyDataDataViewModel):
                 for record in data:
                     email = record[0]
                     folder = record[1]
+                    dirAbsPath = folder
                     owner = UserModel.GetUserByEmail(email)
+
+#                    if (any([owner.username == rowData.GetValueForKey(field)
+#                        for field in DATAVIEW_MODELS['folders'].filterFields])
+#
+#                        and any([str(os.path.basename(dirAbsPath))
+#                                    == rowData.GetValueForKey(field)
+#                        for field in DATAVIEW_MODELS['folders'].filterFields])
+#
+#                        and any([os.path.dirname(dirAbsPath)
+#                                     == rowData.GetValueForKey(field)
+#                        for field in DATAVIEW_MODELS['folders'].filterFields])):
+#                        message = "Some folders already uploaded/uploading!"
+#                        wx.CallAfter(app.frame.SetStatusMessage, message)
+#                        del DATAVIEW_MODELS['folders'].rowsData[row]
+#                        DATAVIEW_MODELS['folders']._RowDeleted(row)
+
                     DATAVIEW_MODELS['folders'].UploadDraggedFolder(folder, owner)
 
                 c.close()
                 dragNDropDB.close()
             except Exception as e:
                     print(e)
-            app = wx.GetApp()
 
             message = "Started in Drag-n-drop Mode"
             wx.CallAfter(app.frame.SetStatusMessage, message)
