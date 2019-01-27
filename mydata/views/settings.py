@@ -1420,24 +1420,7 @@ class SettingsDialog(wx.Dialog):
 
     def UpdateDialogFieldsFromSettings(self):
 
-        # First Check if drag-n-Drop is preset, if so, disable everything else on panel
-        # But if user changes selection, it has to revert to normal.  
-        if SETTINGS.advanced.folderStructure == 'Drag-n-Drop':
-            self.SetFolderStructure(SETTINGS.advanced.folderStructure)
-
-            for child in self.advancedPanelSizer.GetChildren():
-                if(child.GetWindow() is not None):
-                    if(child.GetWindow().GetId() not in [self.ID_folderStructureComboBox, self.ID_folderStructureLabel]):
-                        child.Show(False)
-            # give the SizerItem children ids, pick the ones with the ids for 
-            # folder structure text and multi, and show them... hide the rest 
-            self.settingsTabsNotebook.EnableTab(0, False)
-            self.settingsTabsNotebook.EnableTab(1, False)
-            self.settingsTabsNotebook.EnableTab(2, False)
-            self.settingsTabsNotebook.EnableTab(3, True)
-            self.settingsTabsNotebook.SetSelection(3, True)
- 
-        # General tab
+       # General tab
         self.SetInstrumentName(SETTINGS.general.instrumentName)
         self.SetFacilityName(SETTINGS.general.facilityName)
         self.SetContactName(SETTINGS.general.contactName)
@@ -1534,6 +1517,28 @@ class SettingsDialog(wx.Dialog):
         # state of many fields which depend on the values obtained from
         # the SettingsModel in the lines of code above.
         self.SetLocked(SETTINGS.miscellaneous.locked)
+
+        # First Check if drag-n-Drop is preset, if so, disable everything else on panel
+        # But if user changes selection, it has to revert to normal.  
+        if SETTINGS.advanced.folderStructure == 'Drag-n-Drop':
+            self.SetFolderStructure(SETTINGS.advanced.folderStructure)
+
+            for child in self.advancedPanelSizer.GetChildren():
+                if(child.GetWindow() is not None):
+                    if(child.GetWindow().GetId() not in [self.ID_folderStructureComboBox, self.ID_folderStructureLabel]):
+                        child.Show(False)
+            # give the SizerItem children ids, pick the ones with the ids for 
+            # folder structure text and multi, and show them... hide the rest 
+            self.settingsTabsNotebook.EnableTab(0, True)
+            self.dataDirectoryField.Enable(False)
+            self.browseDataDirectoryButton.Enable(False)
+            self.settingsTabsNotebook.EnableTab(1, False)
+            self.settingsTabsNotebook.EnableTab(2, False)
+            self.settingsTabsNotebook.EnableTab(3, True)
+            self.settingsTabsNotebook.SetSelection(3, True)
+ 
+ 
+
 
     def EnablePasteInPasswordField(self):
         """
@@ -1685,7 +1690,9 @@ class SettingsDialog(wx.Dialog):
         folderStructure = self.folderStructureComboBox.GetValue()
 
         if folderStructure == 'Drag-n-Drop':
-            self.settingsTabsNotebook.EnableTab(0, False)
+            self.settingsTabsNotebook.EnableTab(0, True)
+            self.dataDirectoryField.Enable(False)
+            self.browseDataDirectoryButton.Enable(False)
             self.settingsTabsNotebook.EnableTab(1, False)
             self.settingsTabsNotebook.EnableTab(2, False)
             self.settingsTabsNotebook.EnableTab(3, True)
@@ -1696,6 +1703,8 @@ class SettingsDialog(wx.Dialog):
                         child.Show(False)
  
         else:
+            self.dataDirectoryField.Enable(True)
+            self.browseDataDirectoryButton.Enable(True)
             self.settingsTabsNotebook.EnableTab(0, True)
             self.settingsTabsNotebook.EnableTab(1, True)
             self.settingsTabsNotebook.EnableTab(2, True)
