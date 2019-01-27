@@ -270,8 +270,9 @@ class MyDataFrame(wx.Frame):
         self.Bind(wx.EVT_ICONIZE, self.OnMinimize)
 
         # Let's make this a drag n drop panel
-        dropTarget = MyFileDropTarget(self.panel)
-        self.panel.SetDropTarget(dropTarget)
+        #if SETTTINGS.advanced.folderStructure == "Drag-n-Drop":
+        #    dropTarget = MyFileDropTarget(self.panel)
+        #    self.panel.SetDropTarget(dropTarget)
         # If you start in Drag-n-drop mode, make it droptarget, else don't
         # Also, when starting in drag-n-drop, pop up an appropriate dialog asking the user to explicitly set mode to drag-n-drop
 

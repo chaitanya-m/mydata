@@ -30,6 +30,7 @@ from ..logs import logger
 from ..events import MYDATA_EVENTS
 from ..events import PostEvent
 from ..threads.flags import FLAGS
+import mydata
 
 if 'phoenix' in wx.PlatformInfo:
     import wx.lib.masked
@@ -1260,6 +1261,16 @@ class SettingsDialog(wx.Dialog):
         # was drag-n-drop
         # We need a total compartmentalization
         # The control code should be in a controller file and merely called here...
+
+        appFrame = wx.GetApp().frame
+        if self.GetFolderStructure() == 'Drag-n-Drop':
+            dropTarget = mydata.MyFileDropTarget(appFrame)
+            appFrame.SetDropTarget(dropTarget)
+
+        else:
+            appFrame.SetDropTarget(None)
+
+
         if self.GetFolderStructure() == "Drag-n-Drop":
 
             try:
